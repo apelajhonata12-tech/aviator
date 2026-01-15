@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviator Simulador</title>
+
+<style>
+body {
+    margin: 0;
+    background: #000;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    text-align: center;
+}
+
+.container {
+    padding: 20px;
+}
+
+#plane {
+    font-size: 60px;
+    color: red;
+    transition: transform 0.1s linear;
+}
+
+#multiplier {
+    font-size: 48px;
+    margin: 20px 0;
+}
+
+button {
+    padding: 15px 40px;
+    font-size: 18px;
+    background: red;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:disabled {
+    background: #444;
+}
+
+.history {
+    margin-top: 20px;
+    background: #111;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.history span {
+    color: #00ff00;
+    margin: 5px;
+    display: inline-block;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div id="plane">✈️</div>
+
+    <div id="multiplier">1.00x</div>
+
+    <button id="startBtn">Iniciar</button>
+
+    <div class="history">
+        <h3>Histórico</h3>
+        <div id="historyList"></div>
+    </div>
+
+</div>
+
+<script>
+let multiplier = 1.00;
+let interval;
+let crashPoint = 0;
+let history = [];
+
+const multiplierEl = document.getElementById("multiplier");
+const planeEl = document.getElementById("plane");
+const startBtn = document.getElementById("startBtn");
+const historyList = document.getElementById("historyList");
+
+function generateCrash() {
+    const chance = Math.random();
+    if (chance < 0.6) return (1 + Math.random() * 2).toFixed(2);      // maioria baixa
+    if (chance < 0.9) return (3 + Math.random() * 7).toFixed(2);      // média
+    return (10 + Math.random() * 200).toFixed(2);                     // rara alta
+}
+
+function startGame() {
+    startBtn.disabled = true;
+    multiplier = 1.00;
+    crashPoint = parseFloat(generateCrash());
+
+    interval = setInterval(() => {
+        multiplier += 0.01 + multiplier * 0.002;
+        multiplierEl.innerText = multiplier.toFixed(2) + "x";
+
+        planeEl.style.transform = `translateX(${multiplier * 3}px) translateY(${-multiplier}px)`;
+
+        if (multiplier >= crashPoint) {
+            crash();
+        }
+    }, 50);
+}
+
+function crash() {
+    clearInterval(interval);
+    multiplierEl.innerText = "CRASHED em " + crashPoint + "x";
+    startBtn.disabled = false;
+
+    history.unshift(crashPoint + "x");
+    if (history.length > 10) history.pop();
+
+    renderHistory();
+}
+
+function renderHistory() {
+    historyList.innerHTML = "";
+    history.forEach(h => {
+        const span = document.createElement("span");
+        span.innerText = h;
+        historyList.appendChild(span);
+    });
+}
+
+startBtn.addEventListener("click", startGame);
+</script>
+</body>
+</html>
